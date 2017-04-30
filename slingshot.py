@@ -1,7 +1,7 @@
 #! python3
 
 name='Gravitational Slingshot Simulator'
-version='v0.2'
+version='v0.3'
 author='Bill Ola Rasmussen'
 
 from math import sin, cos, radians
@@ -23,15 +23,27 @@ class Body:
 		self.mass=mass
 		self.pos=Position(x,y)
 		self.vel=Vector(radians(dir),mag)
+	def update(self, other):
+		'update self with effect from other'
+		return 1
 
 class Cluster:
 	def __init__(self):
-		self.list=[]
+		self.buf=[]
 	def add(self,body):
-		self.list.append(body)
+		self.buf.append(body)
 	def step(self):
 		'one step in body interaction, returns sum of attraction between bodies'
-		return 1
+		original=list(self.buf) # work on unchanged values
+		cumulative=0
+		for me in range(len(original)):
+			# prior indices
+			for other in range(0,me):
+				cumulative+=self.buf[me].update(original[other])
+			# subsequent indices
+			for other in range(me+1,len(original)):
+				cumulative+=self.buf[me].update(original[other])
+		return cumulative
 
 def main():
 	print(name, version)
@@ -42,11 +54,10 @@ def main():
 	cluster.add(Body(20,110,200,270,5))
 
 	# run
-	iteration=0
-	maxIteration=2e5
+	maxIteration=int(2e5)
 	initialTotalAttraction=cluster.step()
-	while cluster.step() > initialTotalAttraction and ++iteration < maxIteration:
-		pass
+	for iteration in range(maxIteration):
+		if cluster.step() < initialTotalAttraction: break
 
 	print("done.")
 
