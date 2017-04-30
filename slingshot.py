@@ -31,7 +31,14 @@ class Body:
 		# f = (m1 * m2) / r^2, see https://en.wikipedia.org/wiki/Newton%27s_law_of_universal_gravitation#Modern_form
 		# force is proportional to this calculation (ignores gravitational constant)
 		force = self.mass*other.mass/pow(self.pos.dx(other.pos),2)
-		# todo update position based on force
+		# todo: update position and velocity based on force
+
+		# momentum = mass * velocity
+		# impulse = force * time
+		# final_momentum = initial_momentum + impulse
+
+		# kinetic energy = 1/2 m * v^2
+
 		return force
 
 class Cluster:
