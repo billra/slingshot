@@ -4,12 +4,15 @@ name='Gravitational Slingshot Simulator'
 version='v0.3'
 author='Bill Ola Rasmussen'
 
-from math import sin, cos, radians
+from math import sin, cos, radians, hypot, pow
 
 class Position:
 	def __init__(self,x,y):
 		self.x=x
 		self.y=y
+	def dx(self,other):
+		'distance to another position'
+		return hypot(other.x-self.x,other.y-self.y)
 
 class Vector:
 	def __init__(self,direction,magnitude):
@@ -25,7 +28,11 @@ class Body:
 		self.vel=Vector(radians(dir),mag)
 	def update(self, other):
 		'update self with effect from other'
-		return 1
+		# f = (m1 * m2) / r^2, see https://en.wikipedia.org/wiki/Newton%27s_law_of_universal_gravitation#Modern_form
+		# force is proportional to this calculation (ignores gravitational constant)
+		force = self.mass*other.mass/pow(self.pos.dx(other.pos),2)
+		# todo update position based on force
+		return force
 
 class Cluster:
 	def __init__(self):
