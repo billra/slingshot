@@ -1,10 +1,12 @@
 #! python3
 
 name='Gravitational Slingshot Simulator'
-version='v0.4'
+version='v0.5'
 author='Bill Ola Rasmussen'
 
-from math import sin, cos, radians, hypot, pow, atan2, sqrt
+from math import sin, cos, radians, degrees, hypot, pow, atan2, sqrt
+from sys import exit
+import copy
 
 class Position:
 	def __init__(self,x,y):
@@ -48,9 +50,9 @@ class Body:
 	def update(self, other, time):
 		'update self with effect from other over duration time'
 
-		# force is proportional to this calculation (ignores gravitational constant)
-		# f = (m1 * m2) / r^2, see https://en.wikipedia.org/wiki/Newton%27s_law_of_universal_gravitation#Modern_form
-		force = self.mass*other.mass/pow(self.pos.dx(other.pos),2)
+		# force is proportional to this calculation 
+		# f = g * (m1 * m2) / r^2, see https://en.wikipedia.org/wiki/Newton%27s_law_of_universal_gravitation#Modern_form
+		force = 0.01 * self.mass*other.mass/pow(self.pos.dx(other.pos),2)
 		# force units: mass * distance / time^2
 
 		# force is also: f = m * a, thus a = f / m
@@ -73,7 +75,7 @@ class Cluster:
 		self.buf.append(body)
 	def step(self):
 		'one step in body interaction, returns sum of attraction between bodies'
-		original=list(self.buf) # work on unchanged values
+		original=copy.deepcopy(self.buf) # calculate an entire frame (without changed values)
 		cumulative=0
 		time=5
 		for me in range(len(original)):
@@ -84,7 +86,7 @@ class Cluster:
 			for other in range(me+1,len(original)):
 				cumulative+=self.buf[me].update(original[other],time)
 		for me in self.buf:
-			print(me.pos.x, me.pos.y, end="  ")
+			print("{:11.7f}".format(me.pos.x), "{:11.7f}".format(me.pos.y), "cu {:10.8f}".format(cumulative),end="  ")
 		print()
 		return cumulative
 
@@ -94,13 +96,14 @@ def main():
 	# setup
 	cluster=Cluster()
 	cluster.add(Body(.9,0,0,0,0))
-	cluster.add(Body(.1,0,20,180,5))
+	cluster.add(Body(.1,0,20,180,0.05))
 
 	# run
 	maxIteration=int(2e5)
 	initialTotalAttraction=cluster.step()
 	for iteration in range(maxIteration):
-		if cluster.step() < initialTotalAttraction: break
+		cumulativeAttraction = cluster.step()
+		if cumulativeAttraction < initialTotalAttraction: break
 
 	print("done.")
 
